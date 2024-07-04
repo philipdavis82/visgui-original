@@ -1,39 +1,42 @@
-# Building and Testing
+# Visgui
+
+Visgui is a webgl/wasm project that is ment to build 
+a performent and visually appealing visualization 
+frontend in C++. It uses raylib and imgui as the
+basis of this frame 
+
+dependencies:
+* [raylib](https://github.com/raysan5/raylib)
+* [imgui](https://github.com/ocornut/imgui)
+* [implot](https://github.com/epezent/implot)
+* [rlImGui](https://github.com/raylib-extras/rlImGui)
+
+
+
+# Building 
+
+the building is based in ubuntu and 
 
 ```bash
-docker build -t <target> .
-docker run --rm <target>
+docker build --target build -t visgui.build .
 ```
 
-# Exporting 
+# Exporting and Testing 
 
-Make the Dockerfile look like the one below
-
-```dockerfile
-FROM wasm_env:latest AS build
-COPY . /webgui
-WORKDIR /webgui/app
-RUN make -j4
-
-# Comment out this
-# CMD ["python3" , "test_server.py"]
-
-# Uncomment the below
-FROM scratch
-WORKDIR /webgui/app
-COPY --from=build /webgui/app/index.html /webgui/app/index.html 
-COPY --from=build /webgui/app/imgui.js /webgui/app/imgui.js 
-COPY --from=build /webgui/app/imgui.wasm /webgui/app/imgui.wasm
-COPY --from=build /webgui/app/imgui.data /webgui/app/imgui.data
-COPY --from=build /webgui/app/test_server.py /webgui/app/test_server.py
-```
-
-Then run this in the shell
+when exporting and testing the image is based on alpine
+since the ubuntu image is ~2GB in size.
 
 ```bash
-docker build -t <target> .
-docker create <target> # This outputs an ID to the shell
-docker export <ID> -o <target>.tar.gz
+# build
+docker build --target export -t visgui .
+
+# to test 
+docker run --rm -p 8000:8000 visgui
+# Now navigate to localhost:8000 on a local browser
+
+# To export
+docker create visgui # This outputs an ID to the shell
+docker export <ID> -o visgui.tar.gz # using the ID from the previous line
 ```
 
 Then extract the tar file. inside `/webgui/app/...` is the wasm files.
