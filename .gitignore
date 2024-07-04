@@ -1,0 +1,9 @@
+
+# Web asm
+*.wasm
+*.js
+*.data
+
+# Libs
+*.a
+*.so
