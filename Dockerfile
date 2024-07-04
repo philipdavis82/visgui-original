@@ -1,6 +1,7 @@
 # FROM wasm_env:latest AS build
 
-FROM  ubuntu:jammy AS build
+# 2+ GB
+FROM  ubuntu:jammy AS build 
 LABEL stage=builder
 # apt layer
 RUN apt-get update && apt-get install -y \
@@ -8,11 +9,6 @@ RUN apt-get update && apt-get install -y \
     git \
     python3 \
     xz-utils
-
-    # freeglut3-dev \
-    #\
-    # libglfw3-dev \
-    # emscripten 
 
 # emscripten layer
 WORKDIR /emscripten
@@ -24,43 +20,43 @@ WORKDIR /emscripten/emsdk
 
 RUN ./emsdk install latest 
 RUN ./emsdk activate latest
-# RUN echo "source /emscripten/emsdk/emsdk_env.sh" >> ~/.bashrc
-# RUN cat /etc/bash.bashrc
 
 # raylib layer
-COPY ./raylib-lite /webgui/raylib
+COPY ./extern/raylib-lite /visgui/raylib
 WORKDIR /emscripten/emsdk
 RUN . ./emsdk_env.sh && env
 RUN . ./emsdk_env.sh && \
-    cd /webgui/raylib/src &&\
-    make -e PLATFORM=PLATFORM_WEB -e RAYLIB_RELEASE_PATH=/webgui/raylib/web -B
+    cd /visgui/raylib/src &&\
+    make -e PLATFORM=PLATFORM_WEB -e RAYLIB_RELEASE_PATH=/visgui/raylib/web -B
 
 # Tooling layers
-COPY ./imgui /webgui/imgui
-COPY ./implot /webgui/implot
-COPY ./rlImGui /webgui/rlImGui
+COPY ./extern/imgui /visgui/imgui
+COPY ./extern/implot /visgui/implot
+COPY ./extern/rlImGui /visgui/rlImGui
 
 # Source Layer
-COPY ./app /webgui/app
+COPY ./example /visgui/example
 WORKDIR /emscripten/emsdk
 RUN . ./emsdk_env.sh && \
-    cd /webgui/app &&\
+    cd /visgui/example &&\
     make -j
 
-RUN ls /webgui/app
+RUN ls /visgui/example
 
 # FROM scratch as export
-FROM --platform=$BUILDPLATFORM python:3.11-alpine as export
+# 62MB
+FROM --platform=$BUILDPLATFORM python:3.11-alpine AS export
 
-COPY --from=build /webgui/app/imgui.html /webgui/app/index.html 
-COPY --from=build /webgui/app/imgui.js /webgui/app/imgui.js 
-COPY --from=build /webgui/app/imgui.wasm /webgui/app/imgui.wasm
-COPY --from=build /webgui/app/imgui.data /webgui/app/imgui.data
-COPY --from=build /webgui/app/test_server.py /webgui/app/test_server.py
+COPY --from=build /visgui/example/example.html /visgui/example/index.html 
+COPY --from=build /visgui/example/example.html /visgui/example/example.html 
+COPY --from=build /visgui/example/example.js /visgui/example/example.js 
+COPY --from=build /visgui/example/example.wasm /visgui/example/example.wasm
+COPY --from=build /visgui/example/example.data /visgui/example/example.data
+COPY --from=build /visgui/example/test_server.py /visgui/example/test_server.py
 
-WORKDIR /webgui/app
+WORKDIR /visgui/example
 
-EXPOSE 8000
+EXPOSE 8000:8000
 
 CMD ["python3" , "test_server.py"]
 
