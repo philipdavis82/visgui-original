@@ -2,6 +2,8 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/websocket.h>
+#include <emscripten/bind.h>
 #endif
 
 // #define GLFW_INCLUDE_ES3
@@ -38,74 +40,25 @@ EM_JS(int, canvas_get_height, (), {
     return Module.canvas.height;
 });
 
-// Function called by javascript
-// EM_JS(void, resizeCanvas, (), {
-//     js_resizeCanvas();
+static float camera_angle = 0;
+void EMSCRIPTEN_KEEPALIVE recvServerData(std::string data){
+    // std::cout << data << std::endl;
+    camera_angle = stof(data);
+    return;
+}
+
+EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("recvServerData", &recvServerData);
+}
+
+// EM_JS(std::string, canvas_get_height, (), {
+//     return Module.canvas.height;
 // });
 
-// unsigned int rlLoadTextureDepthMOD(int width, int height){
-//   unsigned int id = 0;
-
-//   glGenTextures(1, &id);
-//   glBindTexture(GL_TEXTURE_2D, id);
-//   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24_OES, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
-
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-//   glBindTexture(GL_TEXTURE_2D, 0);
-
-//   TRACELOG(RL_LOG_INFO, "TEXTURE: Depth texture loaded successfully");
-//   return id;
-// }
-
-// RenderTexture2D LoadRenderTextureMOD(int width, int height)
+// void on_size_changed()
 // {
-//     RenderTexture2D target = { 0 };
-
-//     target.id = rlLoadFramebuffer(width, height);   // Load an empty framebuffer
-
-//     if (target.id > 0)
-//     {
-//         rlEnableFramebuffer(target.id);
-
-//         // Create color texture (default to RGBA)
-//         target.texture.id = rlLoadTexture(0 , width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-//         target.texture.width = width;
-//         target.texture.height = height;
-//         target.texture.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-//         target.texture.mipmaps = 1;
-
-//         // Create depth renderbuffer/texture
-//         target.depth.id = rlLoadTextureDepthMOD(width, height);
-//         target.depth.width = width;
-//         target.depth.height = height;
-//         target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
-//         target.depth.mipmaps = 1;
-
-//         // Attach color texture and depth renderbuffer/texture to FBO
-//         rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-//         rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
-
-//         // Check if fbo is complete with attachments (valid)
-//         if (rlFramebufferComplete(target.id)) TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", target.id);
-
-//         rlDisableFramebuffer();
-//     }
-//     else TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
-
-//     return target;
+//     ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 // }
-
-void on_size_changed()
-{
-    // glfwSetWindowSize(g_window, g_width, g_height);
-    // ResizeWindow()
-    // GetScreenWidth()
-    ImGui::SetCurrentContext(ImGui::GetCurrentContext());
-}
 
 enum SceneMethod{
     INIT,
@@ -115,12 +68,12 @@ enum SceneMethod{
 
 
 static RenderTexture ViewTexture;
-// static Rectangle contentRect = { 0 };
 static Camera3D camera = { 0 };
 static Texture2D GridTexture = { 0 };
 static bool Open = true;
 static bool Focused = true;
-// static position = 0;
+static Vector3 original_position; 
+
 void Scene3D(SceneMethod method)
 {
     
@@ -128,50 +81,25 @@ void Scene3D(SceneMethod method)
         memset(&camera,0,sizeof(camera));
         ViewTexture = LoadRenderTexture(512,512);
         
-        // std::cout << IsTextureReady(ViewTexture) << std::endl;
-        // ViewTexture = LoadRenderTextureMOD(640,480);
-        // camera.fovy = 65;
-		// camera.up.y = 1;
-        // camera.target.z = 1;
-		// camera.position.x = 0;
-        // camera.position.y = 0;
-		// camera.position.z = 0;
-        // camera.
-        // camera.projection = CAMERA_PERSPECTIVE;//CAMERA_PERSPECTIVE;
         camera.fovy = 45;
 		camera.up.y = 1;
-		camera.position.y = 3;
+		camera.position.y = 6;
 		camera.position.z = -25;
-		// Image img = GenImageChecked(256, 256, 32, 32, DARKGRAY, WHITE);
-		// GridTexture = LoadTextureFromImage(img);
-		// UnloadImage(img);
-		// GenTextureMipmaps(&GridTexture);
-		// SetTextureFilter(GridTexture, TEXTURE_FILTER_ANISOTROPIC_16X);
-		// SetTextureWrap(GridTexture, TEXTURE_WRAP_CLAMP);
+        original_position = camera.position;
     }
 
     if(method == RENDER){
         if (!Open)
 			return;
 
-        
-		// float period = 10;
-		// float magnitude = 25;
-        // // camera.fov
-        // camera.fovy = 45;
-		// camera.up.y = 1;
-		// camera.position.y = 3;
-		// camera.position.z = -25;
-        // camera.fovy =  (float)(sinf((float)GetTime() / period) * 179);;
-		// camera.position.x = (float)(sinf((float)GetTime() / period) * magnitude);
-        
         // camera.position.z = 
 		float period = 10;
 		float magnitude = 25;
-
-		camera.position.x = (float)(sinf((float)GetTime() / period) * magnitude);
-
-		BeginTextureMode(ViewTexture);
+        camera.position = original_position;
+		// camera.position.x = (float)(sinf((float)GetTime() / period) * magnitude);
+        camera.position = Vector3Transform(camera.position,MatrixRotateY(camera_angle));
+		// Vector
+        BeginTextureMode(ViewTexture);
 		ClearBackground(SKYBLUE);
 
 		BeginMode3D(camera);
@@ -197,36 +125,23 @@ void Scene3D(SceneMethod method)
 
 		EndMode3D();
 		EndTextureMode();
-        // BeginTextureMode(ViewTexture);
-        //     ClearBackground(SKYBLUE);
-
-        //     BeginMode3D(camera);
-
-        //         DrawCube(Vector3{ 0, 0,  2 }, 1.0f, 1.0f, 1.0f , RED);
-
-        //     EndMode3D();
-		// EndTextureMode();
-
-        // UpdateRenderTexture();
     }
 
     if(method == DRAW){
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        // std::cout << GetScreenWidth() << ", " << GetScreenHeight() << std::endl;
 		ImGui::SetNextWindowSizeConstraints(ImVec2(400, 400), ImVec2((float)GetScreenWidth(), (float)GetScreenHeight()));
 
 		if (ImGui::Begin("3D View", &Open, ImGuiWindowFlags_NoScrollbar))
 		{
 			Focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
-			// draw the view
 			rlImGuiImageRenderTextureFit(&ViewTexture, true);
-            // rlImGuiImageRect(&ViewTexture.texture, 640,480, {640,480});	
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
     }
 }
-
+static bool first_loop = true;
+// static bool size_change
 void loop()
 {
     int i = 0;
@@ -238,7 +153,7 @@ void loop()
     {
         g_width = width;
         g_height = height;
-        on_size_changed();
+        // on_size_changed();
     }
     
     
@@ -252,10 +167,15 @@ void loop()
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
     
-    
+    // if(first_loop)
+        // ImGui::SetNextWindowPos(ImVec2(0, 0),ImGuiCond_FirstUseEver);
     Scene3D(DRAW);
-    
+    if(first_loop)
+        ImGui::SetWindowPos("3D View",ImVec2(0, 300));
+
     {
+        ImGui::Begin("Debug");
+        ImGui::SetWindowSize(ImVec2(400,300));
         static float f = 0.0f;
         static int counter = 0;
         ImGui::Text("Hello, world!");                            // Display some text (you can use a format string too)
@@ -271,6 +191,7 @@ void loop()
         ImGui::Text("counter = %d", counter);
         ImGui::Text("Hello");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
     }
 
     // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
@@ -286,59 +207,41 @@ void loop()
     // 3. Show the ImGui demo window. Most of the sample code is in ImGui::ShowDemoWindow(). Read its code to learn more about Dear ImGui!
     if (show_demo_window)
     {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
+        // if(first_loop)
+            // ImGui::SetNextWindowPos(ImVec2(1000, 0),ImGuiCond_FirstUseEver); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
         ImGui::ShowDemoWindow(&show_demo_window);
+        if(first_loop)
+            ImGui::SetWindowPos("Dear ImGui Demo",ImVec2(1000, 0));
     }
 
     bool show_implot_demo = true;
+    // if(first_loop)
+        // ImGui::SetNextWindowPos(ImVec2(400, 0), ImGuiCond_FirstUseEver);
     ImPlot::ShowDemoWindow(&show_implot_demo);
+    if(first_loop)
+        ImGui::SetWindowPos("ImPlot Demo",ImVec2(400, 0));
+
+    if(first_loop)
+        ImGui::SetWindowPos("Debug",ImVec2(0, 0));
+
+    first_loop = false;
 
     rlImGuiEnd();
-    // ImGui::Render();
     EndDrawing();
-
-    // int display_w, display_h;
-    // glfwMakeContextCurrent(g_window);
-    // glfwGetFramebufferSize(g_window, &display_w, &display_h);
-    // glViewport(0, 0, display_w, display_h);
-    // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // glfwMakeContextCurrent(g_window);
 }
 
 int init_gl()
 {
-    // if( !glfwInit() )
-    // {
-    //     fprintf( stderr, "Failed to initialize GLFW\n" );
-    //     return 1;
-    // }
-
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
-
-    // Open a window and create its OpenGL context
     int canvasWidth = g_width;
     int canvasHeight = g_height;
-    // g_window = glfwCreateWindow(canvasWidth, canvasHeight, "WebGui Demo", NULL, NULL);
 
     SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(canvasWidth, canvasHeight, "webgui-test");
     SetTargetFPS(60);
-    // auto context = ImPlot::GetCurrentContext();
     Scene3D(INIT);
 
     rlImGuiSetup(true);
     ImPlot::SetCurrentContext(ImPlot::CreateContext());
-    
-
-    // if( g_window == NULL )
-    // {
-    //     fprintf( stderr, "Failed to open GLFW window.\n" );
-    //     glfwTerminate();
-    //     return -1;
-    // }
-    // glfwMakeContextCurrent(g_window); // Initialize GLEW
 
     return 0;
 }
@@ -347,37 +250,15 @@ int init_imgui()
 {
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    // ImGui_ImplGlfw_InitForOpenGL(g_window, true);
-    // ImGui_ImplOpenGL3_Init();
-    // rlImGuiSetup(true);
-    // Setup style
-    // ImGui::StyleColorsDark();
 
     ImGuiIO &io = ImGui::GetIO();
-
-    // Load Fonts
-    // io.Fonts->AddFontFromFileTTF("data/xkcd-script.ttf", 23.0f);
-    // io.Fonts->AddFontFromFileTTF("data/xkcd-script.ttf", 18.0f);
-    // io.Fonts->AddFontFromFileTTF("data/xkcd-script.ttf", 26.0f);
-    // io.Fonts->AddFontFromFileTTF("data/xkcd-script.ttf", 32.0f);
-
     io.Fonts->AddFontFromFileTTF("data/open-sans.ttf", 23.0f);
     io.Fonts->AddFontFromFileTTF("data/open-sans.ttf", 18.0f);
     io.Fonts->AddFontFromFileTTF("data/open-sans.ttf", 26.0f);
     io.Fonts->AddFontFromFileTTF("data/open-sans.ttf", 32.0f);
-    
-    // io.Fonts->AddFontDefault();
     io.FontDefault = io.Fonts->Fonts[1];
 
-    // io.Fonts    
-
     rlImGuiReloadFonts();
-
-    // resizeCanvas();
-
-    
-
     return 0;
 }
 
@@ -391,23 +272,17 @@ int init()
 void quit()
 {
     rlImGuiShutdown();
-    // glfwTerminate();
 }
 
 extern "C" int main(int argc, char **argv)
 {
     g_width  = 1920;//canvas_get_width();
     g_height = 1080;//canvas_get_height();
+    
     if (init() != 0)
         return 1;
 
-    // #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
-    // #else
-    // while (!glfwWindowShouldClose(g_window)){
-    // loop();
-    // }
-    // #endif
 
     quit();
 

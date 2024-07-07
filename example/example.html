@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="EN-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>Example Visgui</title>
+
+    <meta name="title" content="Example Visgui">
+    <meta name="description" content="New raylib web videogame, developed using raylib videogames library">
+    <meta name="keywords" content="raylib, programming, examples, html5, C, C++, library, learn, games, videogames">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="media/favicon.ico">
+
+    <style>
+        body { 
+          margin: 0px; 
+          overflow: hidden; 
+          background-color: black;
+        }
+        canvas.emscripten { border: 0px none; background-color: black;}
+    </style>
+    <script type='text/javascript'>
+        function saveFileFromMEMFSToDisk(memoryFSname, localFSname){}
+        
+    </script>
+    </head>
+    <body>
+        <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+        <p id="output" />
+        <script>
+            var Module = {
+                print: (function() {
+                    var element = document.getElementById('output');
+                    if (element) element.value = ''; // clear browser cache
+                    return function(text) {
+                        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                        console.log(text);
+                        if (element) {
+                          element.value += text + "\n";
+                          element.scrollTop = element.scrollHeight; // focus on bottom
+                        }
+                    };
+                })(),
+                canvas: (function() {
+                    var canvas = document.getElementById('canvas');
+                    return canvas;
+                })(),
+                socket: null,
+                recv_data: function(event){
+                    Module.recvServerData(event.data);
+                    Module.socket.send("recieved")
+                },
+                onRuntimeInitialized: function() {
+                    Module.socket = new WebSocket("ws://127.0.0.1:8765/");
+                    // var socket = new WebSocket("wss://echo.websocket.org");
+                    Module.socket.addEventListener("open", (event) => {
+                        Module.socket.send("socket connected");
+                    });
+                    Module.socket.addEventListener("message",Module.recv_data);
+                    Module.socket.addEventListener("close", (event) => {
+                        console.log("socket closed");
+                    });
+                }
+            };
+        </script>
+        {{{ SCRIPT }}}
+    </body>
+</html>

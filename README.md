@@ -28,14 +28,16 @@ since the ubuntu image is ~2GB in size.
 
 ```bash
 # build
-docker build --target export -t visgui .
+docker build --target build -t visgui.build .
+docker build --target test -t visgui.test .
+docker build --target export -t visgui.export .
 
 # to test 
-docker run --rm -p 8000:8000 visgui
+docker run -i --rm -p 8000:8000 -p 8765:8765 --env "PYTHONUNBUFFERED=1" visgui.test
 # Now navigate to localhost:8000 on a local browser
 
 # To export
-docker create visgui # This outputs an ID to the shell
+docker create visgui.export # This outputs an ID to the shell
 docker export <ID> -o visgui.tar.gz # using the ID from the previous line
 ```
 

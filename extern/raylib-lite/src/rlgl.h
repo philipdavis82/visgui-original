@@ -3302,7 +3302,7 @@ unsigned int rlLoadTextureDepth(int width, int height, bool useRenderBuffer)
             // glInternalFormat = GL_DEPTH_COMPONENT24_OES;
         // }
         // else {
-            TRACELOG(RL_LOG_INFO,"setting GL_DEPTH_COMPONENT16");
+            // TRACELOG(RL_LOG_INFO,"setting GL_DEPTH_COMPONENT16");
             glInternalFormat = GL_DEPTH_COMPONENT16;
         // }
         
