@@ -28,7 +28,7 @@ duration=$((end-start))
 if [ $duration -lt 1 ]; then
     # echo "(Shell) "
     echo "(ERROR) Container Terminated Early... "
-    echo "(ERROR) Try running docker container with '-i' ie. 'docker -i <container>'"
+    echo "(ERROR) Try running docker container with '-i' ie. 'docker -i <image>'"
     # echo "(Shell) "
 fi
 

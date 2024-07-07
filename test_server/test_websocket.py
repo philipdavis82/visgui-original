@@ -21,7 +21,7 @@ import math
 async def handler(websocket):
     counter = 0
     angle   = 0
-    rotations_per_min = 2.0
+    rotations_per_min = 6.0
     io_per_second = 60.0
     counts_per_repeat = 60*60/rotations_per_min
     # This is a forever context... From asyncio.Future()?

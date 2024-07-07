@@ -171,6 +171,9 @@ bool rlImGuiImageButton(const char* name, const Texture* image);
 /// <returns>True if the button was clicked</returns>
 bool rlImGuiImageButtonSize(const char* name, const Texture* image, struct ImVec2 size);
 
+void rlguiLoadShader(Shader shader, int index);
+void rlguiEnableShader(int shaderIndex, int drawListIndex, int drawCmdIndex, const char *name);
+void rlguiClearShaders();
 #ifdef __cplusplus
 }
 #endif

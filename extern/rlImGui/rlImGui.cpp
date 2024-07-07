@@ -192,6 +192,7 @@ static void ImGuiTriangleVert(ImDrawVert& idx_vert)
     rlVertex2f(idx_vert.pos.x, idx_vert.pos.y);
 }
 
+// static SetShader(int index )
 static void ImGuiRenderTriangles(unsigned int count, int indexStart, const ImVector<ImDrawIdx>& indexBuffer, const ImVector<ImDrawVert>& vertBuffer, void* texturePtr)
 {
     if (count < 3)
@@ -199,6 +200,9 @@ static void ImGuiRenderTriangles(unsigned int count, int indexStart, const ImVec
 
     Texture* texture = (Texture*)texturePtr;
     SetTextureFilter(*texture,TEXTURE_FILTER_BILINEAR);
+    
+    // SetTextureFilter(*texture,TEXTURE_FILTER_ANISOTROPIC_8X);
+    // SetTextureFilter(*texture,TEXTURE_FILTER_ANISOTROPIC_16X);
     
     unsigned int textureId = (texture == nullptr) ? 0 : texture->id;
     rlBegin(RL_TRIANGLES);
@@ -663,6 +667,31 @@ void ImGui_ImplRaylib_NewFrame(void)
 {
     ImGuiNewFrame(GetFrameTime());
 }
+typedef struct {
+    uint8_t  shader_index;
+    uint16_t cmd_mask;
+    uint8_t  enabled;
+} ShaderMask;
+static Shader      Shaders[24];
+static ShaderMask  DrawShader[100]={0};
+static bool        Enabled[24]={0};
+static std::string DrawShaderName[100];
+void rlguiLoadShader(Shader shader, int index){
+    if(index >= 24) return;
+    Shaders[index] = shader;
+    Enabled[index] = true;
+}
+void rlguiEnableShader(int shaderIndex, int drawListIndex, int drawCmdIndex, const char *name){
+    if(drawListIndex >= 100) return;
+    if(drawListIndex >= 16) return;
+    DrawShader[drawListIndex].cmd_mask |= (1 << drawCmdIndex);
+    DrawShader[drawListIndex].shader_index = shaderIndex;
+    DrawShader[drawListIndex].enabled = 1;
+    DrawShaderName[drawListIndex] = name;
+}
+void rlguiClearShaders(){
+    memset(DrawShader,0,sizeof(DrawShader));
+}
 
 void ImGui_ImplRaylib_RenderDrawData(ImDrawData* draw_data)
 {
@@ -672,9 +701,27 @@ void ImGui_ImplRaylib_RenderDrawData(ImDrawData* draw_data)
     for (int l = 0; l < draw_data->CmdListsCount; ++l)
     {
         const ImDrawList* commandList = draw_data->CmdLists[l];
-
+        const char *name = commandList->_OwnerName;
+        int captured_draw_i = -1;
+        for(int draw_i =0; draw_i<100; draw_i++){
+            if(DrawShader[draw_i].enabled == 0) break;
+            if(DrawShaderName[draw_i] == std::string(name)) {
+                captured_draw_i = draw_i;
+                break;
+            }
+        }
+        int cmd_i = 0;
         for (const auto& cmd : commandList->CmdBuffer)
-        {
+        {   
+            int shader_on = 0;
+            
+            if(captured_draw_i >= 0 && captured_draw_i < 100 && cmd_i < 16)
+                if(DrawShader[captured_draw_i].enabled == 1)
+                    if((DrawShader[captured_draw_i].cmd_mask >> cmd_i) & 1){
+                        BeginShaderMode(Shaders[DrawShader[captured_draw_i].shader_index]);
+                        shader_on = 1;
+                    }
+                        
             EnableScissor(cmd.ClipRect.x - draw_data->DisplayPos.x, cmd.ClipRect.y - draw_data->DisplayPos.y, cmd.ClipRect.z - (cmd.ClipRect.x - draw_data->DisplayPos.x), cmd.ClipRect.w - (cmd.ClipRect.y - draw_data->DisplayPos.y));
             if (cmd.UserCallback != nullptr)
             {
@@ -685,6 +732,10 @@ void ImGui_ImplRaylib_RenderDrawData(ImDrawData* draw_data)
 
             ImGuiRenderTriangles(cmd.ElemCount, cmd.IdxOffset, commandList->IdxBuffer, commandList->VtxBuffer, cmd.TextureId);
             rlDrawRenderBatchActive();
+            if(shader_on){
+                EndShaderMode();
+            }
+            cmd_i ++;
         }
     }
 
