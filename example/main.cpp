@@ -30,34 +30,6 @@
 // #define GLSL_VERSION            100
 #define MAX_LIGHTS 4
 
-static std::string fragment_outline= "#version 100\n\
-precision mediump float;\n\
-// Input vertex attributes (from vertex shader)\n\
-varying vec2 fragTexCoord;\n\
-varying vec4 fragColor;\n\
-// Input uniform values\n\
-uniform sampler2D texture0;\n\
-uniform vec4 colDiffuse;\n\
-uniform vec2 textureSize;\n\
-uniform float outlineSize;\n\
-uniform vec4 outlineColor;\n\
-void main()\n\
-{\n\
-    vec4 texel = texture2D(texture0, fragTexCoord);   // Get texel color\n\
-    vec2 texelScale = vec2(0.0);\n\
-    texelScale.x = outlineSize/textureSize.x;\n\
-    texelScale.y = outlineSize/textureSize.y;\n\
-    // We sample four corner texels, but only for the alpha channel (this is for the outline)\n\
-    vec4 corners = vec4(0.0);\n\
-    corners.x = texture2D(texture0, fragTexCoord + vec2(texelScale.x, texelScale.y)).a;\n\
-    corners.y = texture2D(texture0, fragTexCoord + vec2(texelScale.x, -texelScale.y)).a;\n\
-    corners.z = texture2D(texture0, fragTexCoord + vec2(-texelScale.x, texelScale.y)).a;\n\
-    corners.w = texture2D(texture0, fragTexCoord + vec2(-texelScale.x, -texelScale.y)).a;\n\
-    float outline = min(dot(corners, vec4(1.0)), 1.0);\n\
-    vec4 color = mix(vec4(0.0), outlineColor, outline);\n\
-    gl_FragColor = mix(color, texel, texel.a);\n\
-}";
-
 static std::string fragment_sobel = "#version 100\n\
 precision mediump float;\n\
 // Input vertex attributes (from vertex shader)\n\
@@ -195,6 +167,36 @@ void main()\n\
     gl_Position = mvp*vec4(vertexPosition, 1.0);\n\
 }\n";
 
+static std::string fragment_cross_hatching = "\
+# version 100\n\
+precision mediump float;\n\
+// Input vertex attributes (from vertex shader)\n\
+varying vec2 fragTexCoord;\n\
+varying vec4 fragColor;\n\
+// Input uniform values\n\
+uniform sampler2D texture0;\n\
+uniform vec4 colDiffuse;\n\
+// NOTE: Add here your custom variables\n\
+float hatchOffsetY = 5.0;\n\
+float lumThreshold01 = 0.9;\n\
+float lumThreshold02 = 0.7;\n\
+float lumThreshold03 = 0.5;\n\
+float lumThreshold04 = 0.3;\n\
+void main(){\n\
+    vec3 tc = vec3(1.0, 1.0, 1.0);\n\
+    float lum = length(texture2D(texture0, fragTexCoord).rgb);\n\
+    if (lum < lumThreshold01){\n\
+        if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0.0) tc = vec3(0.0, 0.0, 0.0);}\n\
+    if (lum < lumThreshold02){\n\
+        if (mod(gl_FragCoord .x - gl_FragCoord .y, 10.0) == 0.0) tc = vec3(0.0, 0.0, 0.0);}\n\
+    if (lum < lumThreshold03){\n\
+        if (mod(gl_FragCoord .x + gl_FragCoord .y - hatchOffsetY, 10.0) == 0.0) tc = vec3(0.0, 0.0, 0.0);}\n\
+    if (lum < lumThreshold04){\n\
+        if (mod(gl_FragCoord .x - gl_FragCoord .y - hatchOffsetY, 10.0) == 0.0) tc = vec3(0.0, 0.0, 0.0);}\n\
+    gl_FragColor = vec4(tc, 1.0);\n\
+}\n";
+
+
 // GLFWwindow *g_window;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 bool show_demo_window = true;
@@ -214,9 +216,7 @@ EM_JS(int, canvas_get_height, (), {
 
 static float camera_angle = 0;
 void EMSCRIPTEN_KEEPALIVE recvServerData(std::string data){
-    // std::cout << data << std::endl;
-    camera_angle = stof(data);
-    return;
+    camera_angle = stof(data); return;
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
@@ -232,11 +232,7 @@ EMSCRIPTEN_BINDINGS(my_module) {
 //     ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 // }
 
-enum SceneMethod{
-    INIT,
-    RENDER,
-    DRAW
-};
+
 
 
 static RenderTexture ViewTexture;
@@ -248,42 +244,39 @@ static Vector3 original_position;
 
 static Light lights[MAX_LIGHTS] = { 0 };
 
-static Shader outline_shader;
+static Shader default_shader;
 static Shader sobel_shader;
 static Shader lighting_shader;
-static Shader lighting_frag;
+static Shader cross_hatching_shader;
 
 static Shader *shader_list[] = {
-    &outline_shader,
+    &default_shader,
     &sobel_shader,
-    &lighting_shader
+    &lighting_shader,
+    &cross_hatching_shader
 };
 
 const char* shadersCombo[] = {
-    "outline_shader",
+    "defualt_shader",
     "sobel_shader",
-    "lighting_shader"
+    "lighting_shader",
+    "cross_hatching"
 };
 
 static int shaderSel = 0;
 
+enum SceneMethod{ INIT, RENDER, DRAW };
 
 void Scene3D(SceneMethod method)
 {
     
     if(method == INIT){
-        
-        
-        
-        outline_shader  = LoadShaderFromMemory(0,fragment_outline.c_str());
+        default_shader  = LoadShaderFromMemory(0,0);
         sobel_shader    = LoadShaderFromMemory(0,fragment_sobel.c_str());
         lighting_shader = LoadShaderFromMemory(
             vertex_lighting.c_str(),
             fragment_lighting.c_str());
-        lighting_frag   = LoadShaderFromMemory(
-            0,
-            fragment_lighting.c_str());
-        
+        cross_hatching_shader = LoadShaderFromMemory(0,fragment_cross_hatching.c_str());
         
         int ambientLoc = GetShaderLocation(lighting_shader, "ambient");
         SetShaderValue(lighting_shader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
@@ -294,9 +287,10 @@ void Scene3D(SceneMethod method)
         lights[2] = CreateLight(LIGHT_POINT, (Vector3){  0, 1,  3 }, Vector3Zero(), GREEN, lighting_shader);
         lights[3] = CreateLight(LIGHT_POINT, (Vector3){  0, 1, -3 }, Vector3Zero(), BLUE, lighting_shader);
 
-        rlguiLoadShader(outline_shader,0);
+        rlguiLoadShader(default_shader,0);
         rlguiLoadShader(sobel_shader,1);
         rlguiLoadShader(lighting_shader,2);
+        rlguiLoadShader(cross_hatching_shader,3);
 
         memset(&camera,0,sizeof(camera));
         ViewTexture = LoadRenderTexture(512,512);
@@ -324,24 +318,22 @@ void Scene3D(SceneMethod method)
         float cameraPos[3] = { camera.position.x, camera.position.y, camera.position.z };
         SetShaderValue(lighting_shader, lighting_shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
         
-        if (IsKeyPressed(KEY_ONE)) { lights[0].enabled   = !lights[0].enabled; }
-        if (IsKeyPressed(KEY_TWO)) { lights[1].enabled   = !lights[1].enabled; }
-        if (IsKeyPressed(KEY_THREE)) { lights[2].enabled = !lights[2].enabled; }
-        if (IsKeyPressed(KEY_FOUR)) { lights[3].enabled  = !lights[3].enabled; }
+        if (IsKeyPressed(KEY_ONE))   { lights[0].enabled   = !lights[0].enabled; }
+        if (IsKeyPressed(KEY_TWO))   { lights[1].enabled   = !lights[1].enabled; }
+        if (IsKeyPressed(KEY_THREE)) { lights[2].enabled   = !lights[2].enabled; }
+        if (IsKeyPressed(KEY_FOUR))  { lights[3].enabled   = !lights[3].enabled; }
         for (int i = 0; i < MAX_LIGHTS; i++) UpdateLightValues(lighting_shader, lights[i]);
 		// Vector
         BeginTextureMode(ViewTexture);
 		ClearBackground(SKYBLUE);
 
 		BeginMode3D(camera);
+
             if(shaderSel == 2) BeginShaderMode(*shader_list[shaderSel]);
-                if(shaderSel == 2)
-                    DrawCube(Vector3{0,0,0},2,2,2,WHITE);
-                else
-                    DrawCube(Vector3{0,0,0},2,2,2,GREEN);
+                if(shaderSel == 2)  DrawCube(Vector3{0,0,0},2,2,2,WHITE);
+                else                DrawCube(Vector3{0,0,0},2,2,2,GREEN);
                 DrawCubeWires(Vector3{0,0,0},2,2,2, CLITERAL(Color){ 0, 0, 0, 200 });
             if(shaderSel == 2) EndShaderMode();
-            
 		EndMode3D();
 		EndTextureMode();
     }
@@ -387,9 +379,7 @@ void loop()
     rlImGuiBegin();
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
-    
-    // if(first_loop)
-        // ImGui::SetNextWindowPos(ImVec2(0, 0),ImGuiCond_FirstUseEver);
+
     Scene3D(DRAW);
     if(first_loop)
         ImGui::SetWindowPos("3D View",ImVec2(0, 300));
@@ -428,16 +418,12 @@ void loop()
     // 3. Show the ImGui demo window. Most of the sample code is in ImGui::ShowDemoWindow(). Read its code to learn more about Dear ImGui!
     if (show_demo_window)
     {
-        // if(first_loop)
-            // ImGui::SetNextWindowPos(ImVec2(1000, 0),ImGuiCond_FirstUseEver); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
         ImGui::ShowDemoWindow(&show_demo_window);
         if(first_loop)
             ImGui::SetWindowPos("Dear ImGui Demo",ImVec2(1000, 0));
     }
 
     bool show_implot_demo = true;
-    // if(first_loop)
-        // ImGui::SetNextWindowPos(ImVec2(400, 0), ImGuiCond_FirstUseEver);
     ImPlot::ShowDemoWindow(&show_implot_demo);
     if(first_loop)
         ImGui::SetWindowPos("ImPlot Demo",ImVec2(400, 0));
@@ -472,7 +458,6 @@ int init_gl()
 
 int init_imgui()
 {
-    // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
 
     ImGuiIO &io = ImGui::GetIO();

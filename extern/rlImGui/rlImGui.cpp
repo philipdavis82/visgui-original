@@ -702,6 +702,7 @@ void ImGui_ImplRaylib_RenderDrawData(ImDrawData* draw_data)
     {
         const ImDrawList* commandList = draw_data->CmdLists[l];
         const char *name = commandList->_OwnerName;
+        
         int captured_draw_i = -1;
         for(int draw_i =0; draw_i<100; draw_i++){
             if(DrawShader[draw_i].enabled == 0) break;
@@ -714,23 +715,19 @@ void ImGui_ImplRaylib_RenderDrawData(ImDrawData* draw_data)
         for (const auto& cmd : commandList->CmdBuffer)
         {   
             int shader_on = 0;
-            
+            EnableScissor(cmd.ClipRect.x - draw_data->DisplayPos.x, cmd.ClipRect.y - draw_data->DisplayPos.y, cmd.ClipRect.z - (cmd.ClipRect.x - draw_data->DisplayPos.x), cmd.ClipRect.w - (cmd.ClipRect.y - draw_data->DisplayPos.y));
+            if (cmd.UserCallback != nullptr){
+                cmd.UserCallback(commandList, &cmd); continue;
+            }
             if(captured_draw_i >= 0 && captured_draw_i < 100 && cmd_i < 16)
                 if(DrawShader[captured_draw_i].enabled == 1)
                     if((DrawShader[captured_draw_i].cmd_mask >> cmd_i) & 1){
                         BeginShaderMode(Shaders[DrawShader[captured_draw_i].shader_index]);
                         shader_on = 1;
                     }
-                        
-            EnableScissor(cmd.ClipRect.x - draw_data->DisplayPos.x, cmd.ClipRect.y - draw_data->DisplayPos.y, cmd.ClipRect.z - (cmd.ClipRect.x - draw_data->DisplayPos.x), cmd.ClipRect.w - (cmd.ClipRect.y - draw_data->DisplayPos.y));
-            if (cmd.UserCallback != nullptr)
-            {
-                cmd.UserCallback(commandList, &cmd);
-
-                continue;
-            }
 
             ImGuiRenderTriangles(cmd.ElemCount, cmd.IdxOffset, commandList->IdxBuffer, commandList->VtxBuffer, cmd.TextureId);
+
             rlDrawRenderBatchActive();
             if(shader_on){
                 EndShaderMode();
