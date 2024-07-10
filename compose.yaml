@@ -1,0 +1,14 @@
+services:
+  http:
+    build:
+      context: server
+    image: philipdavis82/visgui.server
+    ports:
+      - '8000:8000'
+  example:
+    build:
+      context: example/websocket_server
+    image: philipdavis82/visgui.example.websocket
+    ports:
+      - '8765:8000'
+  
