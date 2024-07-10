@@ -1,5 +1,45 @@
 # Visgui
 
+wasm and webgl testing
+
+
+# Building Wasm Examples
+
+## Example
+
+Building example wasm project:
+
+```bash
+docker build --target build  -t visgui.example.build --file example/Dockerfile .
+docker build --target export -t visgui.example.export --file example/Dockerfile .
+```
+
+Changing server to use local image. Change `server/Dockerfile`
+
+```Dockerfile
+#FROM philipdavis82/visgui.example.export as example  <----- "Comment out this"
+FROM visgui.example.export as example                 <----- "Add This"
+```
+
+
+# Running Docker 
+
+To run the server and the websocket service run the following
+
+```bash
+docker compose build
+docker compose up
+```
+
+
+
+----------------------
+----------------------
+
+# OLD
+# OLD
+# OLD 
+
 Visgui is a webgl/wasm project that is ment to build 
 a performent and visually appealing visualization 
 frontend in C++. It uses raylib and imgui as the
