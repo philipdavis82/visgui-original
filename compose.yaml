@@ -10,5 +10,11 @@ services:
       context: example/websocket_server
     image: philipdavis82/visgui.example.websocket
     ports:
-      - '8765:8000'
+      - '8001:8000'
+  example_im:
+    build:
+      context: example_im/websocket_server
+    image: philipdavis82/visgui.example_im.websocket
+    ports:
+      - '8002:8000'
   

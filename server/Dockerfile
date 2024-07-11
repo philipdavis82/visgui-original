@@ -1,5 +1,6 @@
 # Copy all the 
 FROM philipdavis82/visgui.example.export as example
+FROM philipdavis82/visgui.example_im.export as example_im
 # FROM philipdavis82/example.export as example
 # FROM philipdavis82/example.export as example
 
@@ -12,7 +13,7 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 COPY . /server
 
 # COPY
-COPY --from=example /export /example/.
-
+COPY --from=example    /export /example/.
+COPY --from=example_im /export /example_im/.
 
 CMD ["python3", "main.py"]

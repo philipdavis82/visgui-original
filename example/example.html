@@ -54,7 +54,7 @@
                     Module.socket.send("recieved")
                 },
                 onRuntimeInitialized: function() {
-                    Module.socket = new WebSocket("ws://127.0.0.1:8765/");
+                    Module.socket = new WebSocket("ws://127.0.0.1:8001/");
                     // var socket = new WebSocket("wss://echo.websocket.org");
                     Module.socket.addEventListener("open", (event) => {
                         Module.socket.send("socket connected");
