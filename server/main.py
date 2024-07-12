@@ -1,7 +1,7 @@
 import aiohttp
 from aiohttp import web
 import asyncio
-import sys
+import sys,os
 import logging
 
 import jinja2
@@ -74,9 +74,13 @@ def index_fav(request):
 # Raylib Example
 def example(request):
     print(f"example.html requested",file=sys.stderr)
+    template = jinja2.Environment()
     with open("/example/example.html","r") as file:
         data = file.read()
-    return web.Response(body=data,content_type='text/html')
+    template = template.from_string(data,globals={
+        "JS_VAR_WEBSOCK" : f'<script>const VAR_WEBSOCK=\"{os.environ["EXAMPLE_CLINET_CONN"]}\";</script>'
+    })
+    return web.Response(body=template.render(),content_type='text/html')
 def example_js(request):
     print(f"example.js requested",file=sys.stderr)
     with open("/example/example.js","r") as file:
@@ -101,9 +105,13 @@ def example_fav(request):
 # ImGui Standalone Example
 def example_im(request):
     print(f"example_im.html requested",file=sys.stderr)
+    template = jinja2.Environment()
     with open("/example_im/example_im.html","r") as file:
         data = file.read()
-    return web.Response(body=data,content_type='text/html')
+    template = template.from_string(data,globals={
+        "JS_VAR_WEBSOCK" : f'<script>const VAR_WEBSOCK=\"{os.environ["EXAMPLE_IM_CLIENT_CONN"]}\";</script>'
+    })
+    return web.Response(body=template.render(),content_type='text/html')
 def example_im_js(request):
     print(f"example_im.js requested",file=sys.stderr)
     with open("/example_im/example_im.js","r") as file:
@@ -165,7 +173,9 @@ def setup():
         web.get("/example_im/example_im.data",example_im_data),
         web.get("/example_im/media/favicon.ico",example_im_fav),
     ])
-    web.run_app(app,port=8000)
+    web.run_app(app,
+                host=os.environ["WEBIP"],
+                port=int(os.environ["WEBPORT"]))
 
 
 

@@ -23,7 +23,7 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
-
+    {{ JS_VAR_WEBSOCK }}
     <script type='text/javascript'>
       var Module = {
         preRun: [],
@@ -46,7 +46,8 @@
                     Module.socket.send("recieved")
                 },
         onRuntimeInitialized: function() {
-                    Module.socket = new WebSocket("ws://127.0.0.1:8002/");
+                    // Module.socket = new WebSocket("ws://127.0.0.1:8002/");
+                    Module.socket = new WebSocket(VAR_WEBSOCK);
                     // var socket = new WebSocket("wss://echo.websocket.org");
                     Module.socket.addEventListener("open", (event) => {
                         Module.socket.send("socket connected");

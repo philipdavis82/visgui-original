@@ -1,6 +1,6 @@
 import websockets
 from threading import Thread
-import sys,time,asyncio,pathlib,ssl,math
+import sys,time,asyncio,pathlib,ssl,math,os
 
 async def rotation(websocket:websockets.WebSocketServer):
     counter = 0
@@ -32,5 +32,7 @@ async def main(ip,port):
 if __name__ == "__main__":
     ip = '0.0.0.0'
     port = 8000
+    ip   = os.environ["WEBIP"]
+    port = int(os.environ["WEBPORT"])
     print(f"Websocket IM Serving: {ip},{port}")
     asyncio.run(main(ip,port))

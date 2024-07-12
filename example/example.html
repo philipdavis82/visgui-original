@@ -30,6 +30,7 @@
     <body>
         <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
         <p id="output" />
+        {{ JS_VAR_WEBSOCK }}
         <script>
             var Module = {
                 print: (function() {
@@ -54,7 +55,8 @@
                     Module.socket.send("recieved")
                 },
                 onRuntimeInitialized: function() {
-                    Module.socket = new WebSocket("ws://127.0.0.1:8001/");
+                    // Module.socket = new WebSocket("ws://127.0.0.1:8001/");
+                    Module.socket = new WebSocket(VAR_WEBSOCK);
                     // var socket = new WebSocket("wss://echo.websocket.org");
                     Module.socket.addEventListener("open", (event) => {
                         Module.socket.send("socket connected");

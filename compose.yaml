@@ -1,17 +1,28 @@
 services:
   http:
+    environment:
+      WEBIP:   "0.0.0.0"
+      WEBPORT: "8000"
+      EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
+      EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
     build:
       context: server
     image: philipdavis82/visgui.server
     ports:
       - '8000:8000'
   example:
+    environment:
+      WEBIP:   "0.0.0.0"
+      WEBPORT: "8000"
     build:
       context: example/websocket_server
     image: philipdavis82/visgui.example.websocket
     ports:
       - '8001:8000'
   example_im:
+    environment:
+      WEBIP:   "0.0.0.0"
+      WEBPORT: "8000"
     build:
       context: example_im/websocket_server
     image: philipdavis82/visgui.example_im.websocket
