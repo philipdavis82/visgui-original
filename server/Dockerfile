@@ -1,6 +1,6 @@
 # Copy all the 
-FROM philipdavis82/visgui.example.export as example
-FROM philipdavis82/visgui.example_im.export as example_im
+FROM philipdavis82/visgui.example.export AS example
+FROM philipdavis82/visgui.example_im.export AS example_im
 # FROM philipdavis82/example.export as example
 # FROM philipdavis82/example.export as example
 

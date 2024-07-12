@@ -4,12 +4,67 @@ import asyncio
 import sys
 import logging
 
-# Main Page
+import jinja2
+
+
+def index_bootstrap(request):
+    print(f"index.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/index.html","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='text/html')
+def index_bootstrap_css(request):
+    print(f"index.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/bootstrap.min.css","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='text/css')
+def index_bootstrap_cover_css(request):
+    print(f"index.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/cover.css","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='text/css')
+
+def album_bootstrap(request):
+    print(f"album.html requested",file=sys.stderr)
+    album = jinja2.Environment()
+    with open("bootstrap/CoverPage/raylib_imgui.svg","r") as file:
+        ray = file.read()
+    with open("bootstrap/CoverPage/imgui_standalone.svg","r") as file:
+        im = file.read()
+    with open("bootstrap/CoverPage/album.html","r") as file:
+        data = file.read()
+    data = album.from_string(data,globals={
+        "raylib_imgui_svg":ray,
+        "imgui_svg":im,
+    })
+    return web.Response(body=data.render(),content_type='text/html')
+def album_bootstrap_css(request):
+    print(f"album.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/bootstrap.min.css","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='text/css')
+def album_bootstrap_cover_css(request):
+    print(f"album.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/album.css","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='text/css')
+def album_bootstrap_bundle_js(request):
+    print(f"album.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/bootstrap.bundle.min.js","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='application/javascript')
+def album_jquery_3_4_1_js(request):
+    print(f"album.html requested",file=sys.stderr)
+    with open("bootstrap/CoverPage/jquery-3.4.1.slim.min.js","r") as file:
+        data = file.read()
+    return web.Response(body=data,content_type='application/javascript')
+    
+
 def index(request):
     print(f"index.html requested",file=sys.stderr)
     with open("index.html","r") as file:
         data = file.read()
     return web.Response(body=data,content_type='text/html')
+
 def index_fav(request):
     print(f"index favicon.ico requested",file=sys.stderr)
     with open("media/favicon.ico","rb") as file:
@@ -75,9 +130,24 @@ def setup():
     app = web.Application()
     # logging.basicConfig(level=logging.DEBUG)
     # Main
+    # app.add_routes([
+        # web.get("/",index),
+        # web.get("/media/favicon.ico",index_fav),
+    # ])
+    # Bootstrap
     app.add_routes([
-        web.get("/",index),
-        web.get("/media/favicon.ico",index_fav),
+        web.get("/",index_bootstrap),
+        web.get("/bootstrap.min.css",index_bootstrap_css),
+        web.get("/cover.css",index_bootstrap_cover_css),
+        web.get("/favicon.ico",index_fav),
+    ])
+
+    app.add_routes([
+        web.get("/album/",album_bootstrap),
+        web.get("/album/bootstrap.min.css",album_bootstrap_css),
+        web.get("/album/album.css",album_bootstrap_cover_css),
+        web.get("/album/bootstrap.bundle.min.js",album_bootstrap_bundle_js),
+        web.get("/album/jquery-3.4.1.slim.min.js",album_jquery_3_4_1_js),
     ])
     # Example
     app.add_routes([
