@@ -340,7 +340,7 @@ void Scene3D(SceneMethod method)
 
     if(method == DRAW){
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::SetNextWindowSizeConstraints(ImVec2(400, 500), ImVec2((float)GetScreenWidth(), (float)GetScreenHeight()));
+		// ImGui::SetNextWindowSizeConstraints(ImVec2(400, 500), ImVec2((float)GetScreenWidth(), (float)GetScreenHeight()));
 
 		if (ImGui::Begin("3D View", &Open, ImGuiWindowFlags_NoScrollbar))
 		{
@@ -383,6 +383,8 @@ void loop()
     Scene3D(DRAW);
     if(first_loop)
         ImGui::SetWindowPos("3D View",ImVec2(0, 300));
+    if(first_loop)
+        ImGui::SetWindowSize("3D View",ImVec2(400, 400));
 
     {
         ImGui::Begin("Debug");

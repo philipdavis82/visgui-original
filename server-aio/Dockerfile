@@ -5,6 +5,7 @@ FROM philipdavis82/visgui.example_im.export AS example_im
 # FROM philipdavis82/example.export as example
 
 FROM --platform=$BUILDPLATFORM python:3.11-alpine AS builder
+# FROM --platform=linux/arm64/v8 python:3.11-alpine AS builder
 
 # Server Enviroment
 WORKDIR /server

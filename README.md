@@ -8,10 +8,15 @@ wasm and webgl testing
 ## Example
 
 Building example wasm project:
+Build this in the top level directory. 
 
 ```bash
-docker build --target build  -t visgui.example.build --file example/Dockerfile .
+# Example Build
+docker build --target build  -t visgui.example.build  --file example/Dockerfile .
 docker build --target export -t visgui.example.export --file example/Dockerfile .
+# Imgui Standalone Build
+docker build --target build  -t visgui.example_im.build  --file example_im/Dockerfile .
+docker build --target export -t visgui.example_im.export --file example_im/Dockerfile .
 ```
 
 Changing server to use local image. Change `server/Dockerfile`

@@ -5,7 +5,6 @@
 
 # Web asm
 *.wasm
-*.js
 *.data
 
 # Libs

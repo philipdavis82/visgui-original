@@ -1,31 +1,43 @@
 services:
   http:
+    platform: linux/amd64/v8
     environment:
+      BUILDPLATFORM: "linux/arm64/v8"
       WEBIP:   "0.0.0.0"
       WEBPORT: "8000"
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
     build:
-      context: server-aio
-    image: philipdavis82/visgui.server
+      context: server
+      platforms: 
+        - linux/amd64/v8
+    image: philipdavis82/visgui-arm.server
     ports:
       - '8000:8000'
   example:
+    platform: linux/amd64/v8
     environment:
+      BUILDPLATFORM: "linux/arm64/v8"
       WEBIP:   "0.0.0.0"
       WEBPORT: "8000"
     build:
       context: example/websocket_server
-    image: philipdavis82/visgui.example.websocket
+      platforms: 
+        - linux/amd64/v8
+    image: philipdavis82/visgui-arm.example.websocket
     ports:
       - '8001:8000'
   example_im:
+    platform: linux/amd64/v8
     environment:
+      BUILDPLATFORM: "linux/arm64/v8"
       WEBIP:   "0.0.0.0"
       WEBPORT: "8000"
     build:
       context: example_im/websocket_server
-    image: philipdavis82/visgui.example_im.websocket
+      platforms: 
+        - linux/amd64/v8
+    image: philipdavis82/visgui-arm.example_im.websocket
     ports:
       - '8002:8000'
   
