@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="media/favicon.ico">
+    <link rel="shortcut icon" href="/example/media/favicon.ico">
 
     <style>
         body { 
@@ -29,8 +29,11 @@
     </head>
     <body>
         <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-        <p id="output" />
+        <!-- <p id="output" /> -->
+        <p id="output"></p>
+        {% autoescape off %}
         {{ JS_VAR_WEBSOCK }}
+        {% endautoescape %}
         <script>
             var Module = {
                 print: (function() {
@@ -68,6 +71,7 @@
                 }
             };
         </script>
-        {{{ SCRIPT }}}
+        <script async type="text/javascript" src="example.js"></script>
+        <!-- \{\{\{ SCRIPT \}\}\} -->
     </body>
 </html>

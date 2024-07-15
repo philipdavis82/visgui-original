@@ -15,8 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,re_path
+from django.views import static
+from . import settings
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.homepage),
+    path('album/', views.album),
+    # Raylib Example
+    path('example/', views.example),
+    re_path(r'^example/(?P<path>.*)$', static.serve, {'document_root': "/example"}),
+    # Imgui Example
+    path('example_im/', views.example_im),
+    re_path(r'^example_im/(?P<path>.*)$', static.serve, {'document_root': "/example_im"}),
 ]

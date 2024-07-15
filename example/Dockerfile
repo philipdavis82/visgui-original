@@ -29,22 +29,26 @@ RUN . ./emsdk_env.sh && \
 COPY ./extern /visgui/extern
 
 # Source Layer
-COPY ./example /visgui/example
+COPY ./example/src /visgui/example/src
 WORKDIR /emscripten/emsdk
 RUN . ./emsdk_env.sh && \
-    cd /visgui/example &&\
+    cd /visgui/example/src &&\
     make -j
+
+COPY ./example/example.html      /visgui/example/.
+COPY ./example/media             /visgui/example/media
+COPY ./example/websocket_server  /visgui/example/websocket_server
 
 # FROM scratch as export
 FROM scratch AS export
 
 # COPY --from=build /visgui/example/example.html /visgui/example/index.html 
-COPY --from=build  /visgui/example/example.html      export/example.html 
-COPY --from=build  /visgui/example/example.js        export/example.js 
-COPY --from=build  /visgui/example/example.wasm      export/example.wasm
-COPY --from=build  /visgui/example/example.data      export/example.data
-COPY --from=build  /visgui/example/media             export/media 
-COPY --from=build  /visgui/example/websocket_server  export/websocket_server 
+COPY --from=build  /visgui/example/example.html      export/templates/example.html 
+COPY --from=build  /visgui/example/src/example.js    export/static/example.js 
+COPY --from=build  /visgui/example/src/example.wasm  export/static/example.wasm
+COPY --from=build  /visgui/example/src/example.data  export/static/example.data
+COPY --from=build  /visgui/example/media             export/static/media 
+COPY --from=build  /visgui/example/websocket_server  export/websockets/websocket_server 
 
 
 

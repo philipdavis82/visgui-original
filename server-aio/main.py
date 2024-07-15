@@ -75,7 +75,7 @@ def index_fav(request):
 def example(request):
     print(f"example.html requested",file=sys.stderr)
     template = jinja2.Environment()
-    with open("/example/example.html","r") as file:
+    with open("/example/templates/example.html","r") as file:
         data = file.read()
     template = template.from_string(data,globals={
         "JS_VAR_WEBSOCK" : f'<script>const VAR_WEBSOCK=\"{os.environ["EXAMPLE_CLINET_CONN"]}\";</script>'
@@ -83,17 +83,17 @@ def example(request):
     return web.Response(body=template.render(),content_type='text/html')
 def example_js(request):
     print(f"example.js requested",file=sys.stderr)
-    with open("/example/example.js","r") as file:
+    with open("/example/static/example.js","r") as file:
         data = file.read()
     return web.Response(body=data,content_type='application/javascript')
 def example_wasm(request):
     print(f"example.wasm requested",file=sys.stderr)
-    with open("/example/example.wasm","rb") as file:
+    with open("/example/static/example.wasm","rb") as file:
         data = file.read()
     return web.Response(body=data,content_type="application/wasm")
 def example_data(request):
     print(f"example.data requested",file=sys.stderr)
-    with open("/example/example.data","rb") as file:
+    with open("/example/static/example.data","rb") as file:
         data = file.read()
     return web.Response(body=data)
 def example_fav(request):
@@ -106,7 +106,7 @@ def example_fav(request):
 def example_im(request):
     print(f"example_im.html requested",file=sys.stderr)
     template = jinja2.Environment()
-    with open("/example_im/example_im.html","r") as file:
+    with open("/example_im/templates/example_im.html","r") as file:
         data = file.read()
     template = template.from_string(data,globals={
         "JS_VAR_WEBSOCK" : f'<script>const VAR_WEBSOCK=\"{os.environ["EXAMPLE_IM_CLIENT_CONN"]}\";</script>'
@@ -114,17 +114,17 @@ def example_im(request):
     return web.Response(body=template.render(),content_type='text/html')
 def example_im_js(request):
     print(f"example_im.js requested",file=sys.stderr)
-    with open("/example_im/example_im.js","r") as file:
+    with open("/example_im/static/example_im.js","r") as file:
         data = file.read()
     return web.Response(body=data,content_type='application/javascript')
 def example_im_wasm(request):
     print(f"example_im.wasm requested",file=sys.stderr)
-    with open("/example_im/example_im.wasm","rb") as file:
+    with open("/example_im/static/example_im.wasm","rb") as file:
         data = file.read()
     return web.Response(body=data,content_type="application/wasm")
 def example_im_data(request):
     print(f"example_im.data requested",file=sys.stderr)
-    with open("/example_im/example_im.data","rb") as file:
+    with open("/example_im/static/example_im.data","rb") as file:
         data = file.read()
     return web.Response(body=data)
 def example_im_fav(request):

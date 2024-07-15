@@ -29,22 +29,26 @@ RUN ./emsdk activate latest
 COPY ./extern /visgui/extern
 
 # Source Layer
-COPY ./example_im /visgui/example_im
+COPY ./example_im/src /visgui/example_im/src
 WORKDIR /emscripten/emsdk
 RUN . ./emsdk_env.sh && \
-    cd /visgui/example_im &&\
+    cd /visgui/example_im/src &&\
     make -j
+
+COPY ./example_im/example_im.html  /visgui/example_im/.
+COPY ./example_im/media            /visgui/example_im/media
+COPY ./example_im/websocket_server /visgui/example_im/websocket_server
 
 # FROM scratch as export
 FROM scratch AS export
 
 # COPY --from=build /visgui/example/example.html /visgui/example/index.html 
-COPY --from=build  /visgui/example_im/example_im.html      export/example_im.html 
-COPY --from=build  /visgui/example_im/example_im.js        export/example_im.js 
-COPY --from=build  /visgui/example_im/example_im.wasm      export/example_im.wasm
-COPY --from=build  /visgui/example_im/example_im.data      export/example_im.data
-COPY --from=build  /visgui/example_im/media                export/media 
-COPY --from=build  /visgui/example_im/websocket_server     export/websocket_server 
+COPY --from=build  /visgui/example_im/example_im.html      export/templates/example_im.html 
+COPY --from=build  /visgui/example_im/src/example_im.js    export/static/example_im.js 
+COPY --from=build  /visgui/example_im/src/example_im.wasm  export/static/example_im.wasm
+COPY --from=build  /visgui/example_im/src/example_im.data  export/static/example_im.data
+COPY --from=build  /visgui/example_im/media                export/static/media 
+COPY --from=build  /visgui/example_im/websocket_server     export/websockets/websocket_server 
 
 
 

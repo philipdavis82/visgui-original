@@ -6,7 +6,7 @@ services:
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
     build:
-      context: server-aio
+      context: server-django
     image: philipdavis82/visgui.server
     ports:
       - '8000:8000'
