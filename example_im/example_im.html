@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Imgui Only Demo</title>
-    <link rel="shortcut icon" href="/example_im/media/favicon.ico">
+    <link rel="shortcut icon" href="/static/example_im/media/favicon.ico">
     <style>
       body {
         font-family: arial;
@@ -58,7 +58,10 @@
                     Module.socket.addEventListener("close", (event) => {
                         console.log("socket closed");
                     });
-                }
+                },
+          locateFile: function(url){
+              { return '/static/example_im/'+url; };
+          }
       };
       window.addEventListener('resize', js_resizeCanvas, false);
       function js_resizeCanvas() {
@@ -67,7 +70,7 @@
       }
 
     </script>
-    <script async type="text/javascript" src="example_im.js"></script>
+    <script async type="text/javascript" src="/static/example_im/example_im.js"></script>
     <!-- \{\{\{ SCRIPT \}\}\} -->
   </body>
 </html>

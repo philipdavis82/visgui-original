@@ -1,15 +1,21 @@
 services:
-  http:
+  vvis:
     environment:
       WEBIP:   "0.0.0.0"
       WEBPORT: "8000"
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
+      # SECRET_KEY: ${SECRET_KEY}
+      # ALLOWED_HOST: "vvis.app,www.vvis.app"
+      DEBUG: "true"
     build:
       context: server-django
     image: philipdavis82/visgui.server
     ports:
       - '8000:8000'
+    volumes:
+      - ./server:/vvis
+    command : sh -c "python manage.py runserver 0.0.0.0:8000"
   example:
     environment:
       WEBIP:   "0.0.0.0"

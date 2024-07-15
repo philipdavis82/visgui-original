@@ -160,18 +160,18 @@ def setup():
     # Example
     app.add_routes([
         web.get("/example/",example),
-        web.get("/example/example.js",example_js),
-        web.get("/example/example.wasm",example_wasm),
-        web.get("/example/example.data",example_data),
-        web.get("/example/media/favicon.ico",example_fav),
+        web.get("/static/example/example.js",example_js),
+        web.get("/static/example/example.wasm",example_wasm),
+        web.get("/static/example/example.data",example_data),
+        web.get("/static/example/media/favicon.ico",example_fav),
     ])
 
     app.add_routes([
         web.get("/example_im/",example_im),
-        web.get("/example_im/example_im.js",example_im_js),
-        web.get("/example_im/example_im.wasm",example_im_wasm),
-        web.get("/example_im/example_im.data",example_im_data),
-        web.get("/example_im/media/favicon.ico",example_im_fav),
+        web.get("/static/example_im/example_im.js",example_im_js),
+        web.get("/static/example_im/example_im.wasm",example_im_wasm),
+        web.get("/static/example_im/example_im.data",example_im_data),
+        web.get("/static/example_im/media/favicon.ico",example_im_fav),
     ])
     web.run_app(app,
                 host=os.environ["WEBIP"],

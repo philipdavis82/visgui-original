@@ -24,15 +24,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY','django-insecure-spk$o&@!swsl^k=2ivpwc4watvaxrjgrtsu@jq+-@795t=1t1p')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+if(os.environ.get("DEBUG","true").lower() == "false"):
+    DEBUG = False
+elif(os.environ.get("DEBUG","true").lower() == "true"):
+    DEBUG = True
+
 
 ALLOWED_HOSTS = []
+
 if(not DEBUG):
-    ALLOWED_HOSTS = [
-        'localhost',
-        '127.0.0.1',
-        'vvis.app',
-    ]
+    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(",") 
+    # [
+        # 'vvis.app',
+        # 'www.vvis.app',
+    # ]
 
 # Application definition
 
@@ -123,11 +128,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# STATIC_URL = 'static/'
-STATIC_URL = os.path.join(BASE_DIR , 'static/')
+STATIC_URL = 'static/'
+# MEDIA_URL = "media/"
+# STATIC_URL = os.path.join(BASE_DIR , 'static/')
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    # os.path.join(BASE_DIR, 'static'),
+    '/static',
 )
+STATIC_ROOT = "/vol/static"
+# MEDIA_ROOT = "/vol/media"
 # STATICFILES_DIRS = (
     # os.path.join(STATIC_URL, 'static/js/'),
     # os.path.join(STATIC_URL, 'static/css/'),
@@ -138,4 +147,11 @@ STATICFILES_DIRS = (
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+if(not DEBUG and not os.environ.get("SECURE","true") == "false"):
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE    = True
+    SECURE_SSL_REDIRECT   = True
+    SECURE_HSTS_SECONDS   = 31536000
+    SECURE_HSTS_PRELOAD   = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 

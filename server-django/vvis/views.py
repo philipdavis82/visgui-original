@@ -21,8 +21,8 @@ def __open_read(filename,io="r"):
     return data
 
 MEDIA_CONTEXT = {
-    "raylib_imgui_svg" : __open_read(os.path.join(BASE_DIR,"static","media","raylib_imgui.svg")),
-    "imgui_svg"        : __open_read(os.path.join(BASE_DIR,"static","media","imgui_standalone.svg")),
+    "raylib_imgui_svg" : __open_read(os.path.join("/static","media","raylib_imgui.svg")),
+    "imgui_svg"        : __open_read(os.path.join("/static","media","imgui_standalone.svg")),
 }
 
 def homepage(request):
