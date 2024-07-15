@@ -5,15 +5,18 @@ services:
       WEBPORT: "8000"
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
+      ALLOWED_HOSTS: "127.0.0.1,localhost"
       SECRET_KEY: "fake_secret_key"
       DEBUG: "true"
-    build:
-      context: server-django
     image: philipdavis82/visgui.server
     ports:
       - '8000:8000'
     volumes:
       - ./server:/vvis
+    # build:
+      # context: server-aio
+    build:
+      context: server-django
     command : sh -c "python manage.py runserver 0.0.0.0:8000"
   example:
     environment:
