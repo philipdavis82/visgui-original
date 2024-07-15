@@ -5,8 +5,7 @@ services:
       WEBPORT: "8000"
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
-      # SECRET_KEY: ${SECRET_KEY}
-      # ALLOWED_HOST: "vvis.app,www.vvis.app"
+      SECRET_KEY: "fake_secret_key"
       DEBUG: "true"
     build:
       context: server-django

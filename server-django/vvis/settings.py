@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY','django-insecure-spk$o&@!swsl^k=2ivpwc4watvaxrjgrtsu@jq+-@795t=1t1p')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if(os.environ.get("DEBUG","true").lower() == "false"):
@@ -29,11 +29,11 @@ if(os.environ.get("DEBUG","true").lower() == "false"):
 elif(os.environ.get("DEBUG","true").lower() == "true"):
     DEBUG = True
 
-
 ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(",") 
 
-if(not DEBUG):
-    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(",") 
+# if(not DEBUG):
+    # ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS","").split(",") 
     # [
         # 'vvis.app',
         # 'www.vvis.app',
