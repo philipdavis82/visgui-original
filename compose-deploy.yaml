@@ -8,8 +8,8 @@ services:
       # SECRET_KEY: ${SECRET_KEY}
       # SECRET_KEY: "fake_secret_key"
       # ALLOWED_HOSTS: "127.0.0.1,localhost"
-      ALLOWED_HOSTS: "vvis.app,www.vvis.app"
-      DEBUG: "true"
+      ALLOWED_HOSTS: "127.0.0.1,localhost,10.0.0.206,vvs-app.com,www.vvs-app.com"
+      DEBUG: "false"
       SECURE: "false"
     build:
       context: server-django
