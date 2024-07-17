@@ -214,8 +214,10 @@ EM_JS(int, canvas_get_height, (), {
     return Module.canvas.height;
 });
 
+static bool  connection_established = false;
 static float camera_angle = 0;
 void EMSCRIPTEN_KEEPALIVE recvServerData(std::string data){
+    connection_established = true;
     camera_angle = stof(data); return;
 }
 
@@ -369,9 +371,17 @@ void loop()
         // on_size_changed();
     }
     
-    
-    
     Scene3D(RENDER);
+
+    if(ImGui::GetIO().Framerate > 1 && ImGui::GetIO().Framerate < 2000){
+        float ROTATIONS_PER_MIN = 6.0;
+        if(!connection_established){
+            camera_angle -= GetFrameTime()/60.0*ROTATIONS_PER_MIN*2.0*3.14159;
+            while(camera_angle < -2*3.14159){
+                camera_angle += 2*3.14159;
+            }
+        }
+    }
 
     BeginDrawing();
     ClearBackground(DARKGRAY);
@@ -384,7 +394,7 @@ void loop()
     if(first_loop)
         ImGui::SetWindowPos("3D View",ImVec2(0, 300));
     if(first_loop)
-        ImGui::SetWindowSize("3D View",ImVec2(400, 400));
+        ImGui::SetWindowSize("3D View",ImVec2(400, 500));
 
     {
         ImGui::Begin("Debug");

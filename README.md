@@ -1,49 +1,5 @@
 # Visgui
 
-wasm and webgl testing
-
-
-# Building Wasm Examples
-
-## Example
-
-Building example wasm project:
-Build this in the top level directory. 
-
-```bash
-# Example Build
-docker build --target build  -t visgui.example.build  --file example/Dockerfile .
-docker build --target export -t visgui.example.export --file example/Dockerfile .
-# Imgui Standalone Build
-docker build --target build  -t visgui.example_im.build  --file example_im/Dockerfile .
-docker build --target export -t visgui.example_im.export --file example_im/Dockerfile .
-```
-
-Changing server to use local image. Change `server/Dockerfile`
-
-```Dockerfile
-#FROM philipdavis82/visgui.example.export as example  <----- "Comment out this"
-FROM visgui.example.export as example                 <----- "Add This"
-```
-
-
-# Running Docker 
-
-To run the server and the websocket service run the following
-
-```bash
-docker compose build
-docker compose up
-```
-
-
-
-----------------------
-----------------------
-
-# OLD
-# OLD
-# OLD 
 
 Visgui is a webgl/wasm project that is ment to build 
 a performent and visually appealing visualization 
@@ -57,33 +13,90 @@ dependencies:
 * [rlImGui](https://github.com/raylib-extras/rlImGui)
 
 
+# Building Wasm Examples
 
-# Building 
+## WASM Examples
 
-the building is based in ubuntu and 
+Building example wasm project:
+Build this in the top level directory. `cd <PATH>/visgui`
 
-```bash
-docker build --target build -t visgui.build .
-```
-
-# Exporting and Testing 
-
-when exporting and testing the image is based on alpine
-since the ubuntu image is ~2GB in size.
 
 ```bash
-# build
-docker build --target build -t visgui.build .
-docker build --target test -t visgui.test .
-docker build --target export -t visgui.export .
-
-# to test 
-docker run -i --rm -p 8000:8000 -p 8765:8765 --env "PYTHONUNBUFFERED=1" visgui.test
-# Now navigate to localhost:8000 on a local browser
-
-# To export
-docker create visgui.export # This outputs an ID to the shell
-docker export <ID> -o visgui.tar.gz # using the ID from the previous line
+# Example Build
+docker build --target build  -t visgui.example.build  --file example/Dockerfile .
+docker build --target export -t visgui.example.export --file example/Dockerfile .
+# Imgui Standalone Build
+docker build --target build  -t visgui.example_im.build  --file example_im/Dockerfile .
+docker build --target export -t visgui.example_im.export --file example_im/Dockerfile .
 ```
 
-Then extract the tar file. inside `/webgui/app/...` is the wasm files.
+Changing server to use local image. Change `server-django/Dockerfile`
+
+```Dockerfile
+#FROM philipdavis82/visgui.example.export as example  <----- "Comment out this"
+FROM visgui.example.export as example                 <----- "Add This"
+```
+
+
+# Running Docker Locally
+
+To run the server and the websocket service run the following
+
+```bash
+docker compose build
+docker compose up
+```
+
+Now go to localhost:8000 to connect to the local server.
+
+# Deploying the server
+
+follow the steps to setup and open the tunnel 
+
+`https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/`
+
+or 
+
+`https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-local-tunnel/`
+
+Once the tunnel is up run the following.
+
+```bash
+# Before this configure the cloudflared tunnel for this device.
+git clone/pull git@github.com:philipdavis82/visgui.git
+cd visgui
+export SECRET_KEY="<insert key here>"
+docker compose -f compose-deploy.yaml up --build
+# All Done. This should be running now.
+```
+
+# Other Setups 
+
+The above uses nginx and django but the aiohttp build is also available. 
+
+Change the `compose.yaml` file to run
+
+`django` setup
+
+```yaml
+    # build:
+      # context: server-aio
+    build:
+      context: server-django
+    command : sh -c "python manage.py runserver 0.0.0.0:8000"
+```
+
+`aiohttp` setup
+
+```yaml
+    build:
+      context: server-aio
+    #build:
+     # context: server-django
+    #command : sh -c "python manage.py runserver 0.0.0.0:8000"
+```
+
+# Future plans
+
+* Get aio running with a reverse proxy `https://docs.aiohttp.org/en/stable/deployment.html`
+* Get lighttpd running as the reverse proxy instead of nginx. 

@@ -5,9 +5,7 @@ services:
       WEBPORT: "8000"
       EXAMPLE_CLINET_CONN: "ws://127.0.0.1:8001/"
       EXAMPLE_IM_CLIENT_CONN: "ws://127.0.0.1:8002/"
-      # SECRET_KEY: ${SECRET_KEY}
-      # SECRET_KEY: "fake_secret_key"
-      # ALLOWED_HOSTS: "127.0.0.1,localhost"
+      SECRET_KEY: ${SECRET_KEY}
       ALLOWED_HOSTS: "127.0.0.1,localhost,10.0.0.206,vvs-app.com,www.vvs-app.com"
       DEBUG: "false"
       SECURE: "false"
@@ -19,7 +17,6 @@ services:
     volumes:
       - static_data:/vol/static
   proxy:
-    environment:
     build:
       context: ./web-server-nginx
     volumes:

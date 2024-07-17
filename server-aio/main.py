@@ -98,7 +98,7 @@ def example_data(request):
     return web.Response(body=data)
 def example_fav(request):
     print(f"example favicon.ico requested",file=sys.stderr)
-    with open("/example/media/favicon.ico","rb") as file:
+    with open("/example/static/media/favicon.ico","rb") as file:
         data = file.read()
     return web.Response(body=data)#,content_type='text/plain')
 
@@ -163,7 +163,7 @@ def setup():
         web.get("/static/example/example.js",example_js),
         web.get("/static/example/example.wasm",example_wasm),
         web.get("/static/example/example.data",example_data),
-        web.get("/static/example/media/favicon.ico",example_fav),
+        web.get("/static/example/media/favicon.ico",example_fav), 
     ])
 
     app.add_routes([
