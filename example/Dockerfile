@@ -39,7 +39,7 @@ COPY ./example/example.html      /visgui/example/.
 COPY ./example/media             /visgui/example/media
 COPY ./example/websocket_server  /visgui/example/websocket_server
 
-# FROM scratch as export
+# FROM scratch as export ~3MB
 FROM scratch AS export
 
 # COPY --from=build /visgui/example/example.html /visgui/example/index.html 

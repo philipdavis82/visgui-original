@@ -374,7 +374,7 @@ void loop()
     Scene3D(RENDER);
 
     if(ImGui::GetIO().Framerate > 1 && ImGui::GetIO().Framerate < 2000){
-        float ROTATIONS_PER_MIN = 6.0;
+        float ROTATIONS_PER_MIN = 9.0;
         if(!connection_established){
             camera_angle -= GetFrameTime()/60.0*ROTATIONS_PER_MIN*2.0*3.14159;
             while(camera_angle < -2*3.14159){
